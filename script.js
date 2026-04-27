@@ -18,14 +18,62 @@
   });
 })();
 
-// Burger menu
+// Burger menu — panel lateral
 (function () {
   const burger = document.querySelector('.nav__burger');
-  const links = document.querySelector('.nav__links');
-  if (!burger || !links) return;
-  burger.addEventListener('click', () => {
-    const isOpen = links.style.display === 'flex';
-    links.style.display = isOpen ? 'none' : 'flex';
+  if (!burger) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+
+  const panel = document.createElement('div');
+  panel.className = 'nav-panel';
+  panel.innerHTML = [
+    '<div class="nav-panel__header">',
+    '  <span class="nav-panel__logo">Maison Castillo</span>',
+    '  <button class="nav-panel__close" aria-label="Fermer le menu">',
+    '    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+    '      <line x1="18" y1="6" x2="6" y2="18"/>',
+    '      <line x1="6" y1="6" x2="18" y2="18"/>',
+    '    </svg>',
+    '  </button>',
+    '</div>',
+    '<nav class="nav-panel__links">',
+    '  <a href="#services" class="nav-panel__link">Services</a>',
+    '  <a href="#comment" class="nav-panel__link">Comment ca marche</a>',
+    '  <a href="#pourquoi" class="nav-panel__link">Pourquoi nous</a>',
+    '  <a href="#contact" class="nav-panel__link">Contact</a>',
+    '</nav>',
+    '<div class="nav-panel__cta">',
+    '  <a href="#contact" class="btn btn--primary" style="width:100%;justify-content:center">Devis gratuit</a>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(panel);
+
+  function openMenu() {
+    panel.classList.add('is-open');
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    burger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenu() {
+    panel.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+    burger.setAttribute('aria-expanded', 'false');
+  }
+
+  burger.addEventListener('click', openMenu);
+  overlay.addEventListener('click', closeMenu);
+  panel.querySelector('.nav-panel__close').addEventListener('click', closeMenu);
+  panel.querySelectorAll('.nav-panel__link, .btn--primary').forEach(function(link) {
+    link.addEventListener('click', closeMenu);
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
   });
 })();
 
@@ -77,7 +125,7 @@ document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
   statsObserver.observe(strip);
 })();
 
-// Contact form — envoi via PHP send_mail.php
+// Contact form
 (function () {
   var form = document.getElementById('contactForm');
   if (!form) return;
@@ -88,29 +136,23 @@ document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!btn || !content || !success) return;
-
     btn.textContent = 'Envoi en cours...';
     btn.disabled = true;
-
     var data = new FormData(form);
-
-    fetch('send_mail.php', {
-      method: 'POST',
-      body: data
-    })
+    fetch('send_mail.php', { method: 'POST', body: data })
     .then(function(resp) { return resp.json(); })
     .then(function(json) {
       if (json.success) {
         content.style.display = 'none';
         success.classList.add('visible');
       } else {
-        alert('Erreur : ' + (json.error || 'Un problème est survenu.'));
+        alert('Erreur : ' + (json.error || 'Un probleme est survenu.'));
         btn.disabled = false;
         btn.textContent = 'Envoyer ma demande de devis';
       }
     })
     .catch(function() {
-      alert('Erreur réseau. Merci de réessayer.');
+      alert('Erreur reseau. Merci de reessayer.');
       btn.disabled = false;
       btn.textContent = 'Envoyer ma demande de devis';
     });
