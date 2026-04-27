@@ -47,23 +47,24 @@ document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
 (function () {
   const strip = document.querySelector('.hero__stat-strip');
   if (!strip) return;
-  function animateCounter(el, target, suffix = '') {
-    let startTime = null;
-    const duration = 1800;
+  function animateCounter(el, target, suffix) {
+    suffix = suffix || '';
+    var startTime = null;
+    var duration = 1800;
     function step(timestamp) {
       if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
+      var progress = Math.min((timestamp - startTime) / duration, 1);
+      var ease = 1 - Math.pow(1 - progress, 3);
       el.textContent = Math.round(ease * target) + suffix;
       if (progress < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
-  const statsObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
+  var statsObserver = new IntersectionObserver(
+    function(entries) {
+      entries.forEach(function(e) {
         if (e.isIntersecting) {
-          const nums = e.target.querySelectorAll('.hero__stat-number');
+          var nums = e.target.querySelectorAll('.hero__stat-number');
           nums[0] && animateCounter(nums[0], 500, '+');
           nums[1] && animateCounter(nums[1], 98, '%');
           nums[2] && (nums[2].textContent = '7j/7');
@@ -76,21 +77,42 @@ document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el))
   statsObserver.observe(strip);
 })();
 
-// Contact form (vitrine)
+// Contact form — envoi via PHP send_mail.php
 (function () {
-  const form = document.getElementById('contactForm');
+  var form = document.getElementById('contactForm');
   if (!form) return;
-  const content = document.getElementById('formContent');
-  const success = document.getElementById('formSuccess');
-  const btn = form.querySelector('.form-submit');
+  var content = document.getElementById('formContent');
+  var success = document.getElementById('formSuccess');
+  var btn = form.querySelector('.form-submit');
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!btn || !content || !success) return;
+
     btn.textContent = 'Envoi en cours...';
     btn.disabled = true;
-    setTimeout(() => {
-      content.style.display = 'none';
-      success.classList.add('visible');
-    }, 1200);
+
+    var data = new FormData(form);
+
+    fetch('send_mail.php', {
+      method: 'POST',
+      body: data
+    })
+    .then(function(resp) { return resp.json(); })
+    .then(function(json) {
+      if (json.success) {
+        content.style.display = 'none';
+        success.classList.add('visible');
+      } else {
+        alert('Erreur : ' + (json.error || 'Un problème est survenu.'));
+        btn.disabled = false;
+        btn.textContent = 'Envoyer ma demande de devis';
+      }
+    })
+    .catch(function() {
+      alert('Erreur réseau. Merci de réessayer.');
+      btn.disabled = false;
+      btn.textContent = 'Envoyer ma demande de devis';
+    });
   });
 })();
