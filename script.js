@@ -1,3 +1,7 @@
+// Fix scroll restauration — force le haut de page au chargement
+history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
 // Theme toggle
 (function () {
   const toggle = document.querySelector('[data-theme-toggle]');
